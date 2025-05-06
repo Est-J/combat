@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Combat - Style Undertale</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .combat-box {
+      border: 3px solid white;
+      padding: 20px;
+      width: 600px;
+      text-align: center;
+      background-color: black;
+    }
+    .hp-bar {
+      height: 20px;
+      width: 100%;
+      background: grey;
+      margin-bottom: 10px;
+      border: 1px solid white;
+    }
+    .hp-fill {
+      height: 100%;
+      background: red;
+      width: 100%;
+      transition: width 0.3s;
+    }
+    .menu {
+      margin-top: 20px;
+    }
+    button {
+      background: black;
+      color: white;
+      border: 1px solid white;
+      padding: 10px 20px;
+      margin: 5px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background-color: white;
+      color: black;
+    }
+    #dialogue {
+      border-top: 1px solid white;
+      padding-top: 10px;
+      margin-top: 10px;
+      min-height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="combat-box">
+    <h2>SANS</h2>
+    <div class="hp-bar"><div class="hp-fill" id="hpFill"></div></div>
+    <div id="status">HP : 15 / 15</div>
+
+    <div class="menu">
+      <button onclick="attack()">Attaquer</button>
+      <button onclick="spare()">Épargner</button>
+      <button onclick="talk()">Parler</button>
+    </div>
+
+    <div id="dialogue"></div>
+  </div>
+
+  <script>
+    let hp = 15;
+    const maxHp = 15;
+    let canSpare = false;
+
+    function typeWriter(text, speed = 25) {
+      const dialogue = document.getElementById('dialogue');
+      dialogue.innerHTML = '';
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          dialogue.innerHTML += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        }
+      }
+      type();
+    }
+
+    function updateHPBar() {
+      const fill = document.getElementById('hpFill');
+      const percent = (hp / maxHp) * 100;
+      fill.style.width = percent + '%';
+      document.getElementById('status').innerText = `HP : ${hp} / ${maxHp}`;
+    }
+
+    function attack() {
+      if (hp <= 0) {
+        typeWriter("Sans est déjà KO...");
+        return;
+      }
+      const dmg = Math.floor(Math.random() * 4) + 3;
+      hp -= dmg;
+      if (hp < 0) hp = 0;
+      updateHPBar();
+
+      if (hp <= 5 && hp > 0) {
+        canSpare = true;
+        typeWriter(`Tu frappes Sans ! Il perd ${dmg} PV.\nIl semble affaibli...`);
+      } else if (hp === 0) {
+        typeWriter(`Tu frappes Sans ! Il perd ${dmg} PV.\nSans s'effondre. Tu as gagné.`);
+      } else {
+        typeWriter(`Tu frappes Sans ! Il perd ${dmg} PV.`);
+      }
+    }
+
+    function spare() {
+      if (hp === 0) {
+        typeWriter("Il est déjà hors d'état de nuire.");
+      } else if (canSpare) {
+        hp = 0;
+        updateHPBar();
+        typeWriter("Tu épargnes Sans.\nIl te regarde, surpris... puis accepte.");
+      } else {
+        typeWriter("Tu essaies d'épargner Sans...\nIl ne semble pas prêt.");
+      }
+    }
+
+    function talk() {
+      const lines = [
+        "Tu engages la conversation...",
+        "Sans te lance un regard vide.",
+        "Il te raconte une blague... bizarre.",
+        "Sans : *t'es vraiment du genre bavard, huh.*",
+        "Il soupire... mais reste silencieux."
+      ];
+      const line = lines[Math.floor(Math.random() * lines.length)];
+      typeWriter(line);
+    }
+
+    // Init
+    updateHPBar();
+    typeWriter("Sans apparaît.");
+  </script>
+</body>
+</html>
