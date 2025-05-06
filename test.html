@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Combat Style Undertale</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+    }
+    .box {
+      border: 2px solid white;
+      padding: 10px;
+      width: 400px;
+      margin: auto;
+      text-align: center;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    button {
+      background: black;
+      border: 1px solid white;
+      color: white;
+      padding: 10px 20px;
+      font-family: inherit;
+      margin: 5px;
+      cursor: pointer;
+    }
+    #log {
+      margin-top: 15px;
+      white-space: pre-line;
+      min-height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Sans</h2>
+    <div id="status">Sans HP : 15</div>
+    <div class="buttons">
+      <button onclick="attack()">Attaquer</button>
+      <button onclick="spare()">Épargner</button>
+      <button onclick="talk()">Parler</button>
+    </div>
+    <div id="log"></div>
+  </div>
+
+  <script>
+    let enemyHP = 15;
+    let canSpare = false;
+
+    function logText(text) {
+      const logDiv = document.getElementById("log");
+      logDiv.innerText = text;
+    }
+
+    function updateStatus() {
+      document.getElementById("status").innerText = `Sans HP : ${enemyHP}`;
+    }
+
+    function attack() {
+      if (enemyHP <= 0) {
+        logText("Le combat est terminé.");
+        return;
+      }
+
+      const dmg = Math.floor(Math.random() * 4) + 3;
+      enemyHP -= dmg;
+      if (enemyHP < 0) enemyHP = 0;
+      logText(`Tu attaques Sans.\nIl perd ${dmg} PV.`);
+      updateStatus();
+
+      if (enemyHP <= 5 && enemyHP > 0) {
+        canSpare = true;
+        logText(`Tu attaques Sans.\nIl perd ${dmg} PV.\nSans semble prêt à être épargné.`);
+      } else if (enemyHP === 0) {
+        logText(`Tu attaques Sans.\nIl perd ${dmg} PV.\nSans s'écroule. Tu as gagné.`);
+      }
+    }
+
+    function spare() {
+      if (enemyHP <= 0) {
+        logText("Sans est déjà vaincu.");
+        return;
+      }
+      if (canSpare) {
+        enemyHP = 0;
+        updateStatus();
+        logText("Tu épargnes Sans. Il accepte ton pardon.");
+      } else {
+        logText("Sans n'est pas encore prêt à être épargné.");
+      }
+    }
+
+    function talk() {
+      const responses = [
+        "Sans reste silencieux.",
+        "Sans fait une blague... mauvaise.",
+        "Tu parles à Sans. Il te regarde en souriant.",
+        "Sans : *heh... tu veux vraiment discuter maintenant ?*"
+      ];
+      const r = responses[Math.floor(Math.random() * responses.length)];
+      logText(r);
+    }
+  </script>
+</body>
+</html>
