@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Combat Undertale Style</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: "Courier New", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #battle-box {
+      width: 640px;
+      padding: 20px;
+      border: 2px solid white;
+      margin-top: 20px;
+    }
+    canvas {
+      background: black;
+      border: 2px solid white;
+      display: block;
+      margin: 20px auto;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      background: black;
+      color: white;
+      border: 1px solid white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: white;
+      color: black;
+    }
+    #log {
+      min-height: 60px;
+      margin-top: 10px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div id="battle-box">
+    <h2>SANS - HP: <span id="enemyHP">15</span>/15</h2>
+    <div id="playerHP">Votre HP : 20</div>
+    <div id="log">Sans apparaît.</div>
+    <div id="controls">
+      <button onclick="attack()">Attaquer</button>
+      <button onclick="spare()">Épargner</button>
+      <button onclick="talk()">Parler</button>
+    </div>
+  </div>
+
+  <canvas id="battleCanvas" width="300" height="150"></canvas>
+
+  <script>
+    const canvas = document.getElementById("battleCanvas");
+    const ctx = canvas.getContext("2d");
+    let enemyHP = 15;
+    let playerHP = 20;
+    let canSpare = false;
+
+    let inDodgePhase = false;
+    let box = { x: 140, y: 70, size: 10 };
+    let bullets = [];
+
+    document.addEventListener("keydown", (e) => {
+      if (!inDodgePhase) return;
+      const speed = 5;
+      if (e.key === "ArrowLeft") box.x -= speed;
+      if (e.key === "ArrowRight") box.x += speed;
+      if (e.key === "ArrowUp") box.y -= speed;
+      if (e.key === "ArrowDown") box.y += speed;
+    });
+
+    function updateLog(text) {
+      document.getElementById("log").innerText = text;
+    }
+
+    function updateHP() {
+      document.getElementById("enemyHP").innerText = enemyHP;
+      document.getElementById("playerHP").innerText = `Votre HP : ${playerHP}`;
+    }
+
+    function attack() {
+      if (enemyHP <= 0) {
+        updateLog("Sans est déjà KO.");
+        return;
+      }
+      const dmg = Math.floor(Math.random() * 4) + 3;
+      enemyHP -= dmg;
+      if (enemyHP < 0) enemyHP = 0;
+      updateLog(`Tu attaques Sans et lui infliges ${dmg} dégâts.`);
+      if (enemyHP <= 5 && enemyHP > 0) canSpare = true;
+      updateHP();
+      if (enemyHP > 0) {
+        setTimeout(() => startEnemyTurn(), 1000);
+      } else {
+        updateLog("Sans est KO. Tu as gagné !");
+      }
+    }
+
+    function spare() {
+      if (enemyHP === 0) {
+        updateLog("Tu as déjà gagné.");
+      } else if (canSpare) {
+        updateLog("Tu épargnes Sans. Il accepte.");
+        enemyHP = 0;
+        updateHP();
+      } else {
+        updateLog("Sans ne semble pas prêt à être épargné.");
+        setTimeout(() => startEnemyTurn(), 1000);
+      }
+    }
+
+    function talk() {
+      const replies = [
+        "Sans ne dit rien...",
+        "Il te regarde en silence.",
+        "*heh... t'es marrant.*",
+        "Il raconte une mauvaise blague."
+      ];
+      updateLog(replies[Math.floor(Math.random() * replies.length)]);
+      setTimeout(() => startEnemyTurn(), 1000);
+    }
+
+    function startEnemyTurn() {
+      updateLog("Sans t'attaque !");
+      inDodgePhase = true;
+      box.x = 140;
+      box.y = 70;
+      bullets = [];
+
+      // Générer des projectiles
+      for (let i = 0; i < 10; i++) {
+        bullets.push({
+          x: Math.random() * 280,
+          y: -Math.random() * 300,
+          radius: 5,
+          speed: 2 + Math.random() * 2
+        });
+      }
+
+      let time = 0;
+      let phase = setInterval(() => {
+        time++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Dessiner la boîte du joueur
+        ctx.fillStyle = "white";
+        ctx.fillRect(box.x, box.y, box.size, box.size);
+
+        // Déplacer les projectiles
+        ctx.fillStyle = "red";
+        bullets.forEach((b) => {
+          b.y += b.speed;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Collision
+          if (
+            b.x > box.x &&
+            b.x < box.x + box.size &&
+            b.y > box.y &&
+            b.y < box.y + box.size
+          ) {
+            playerHP -= 1;
+            updateHP();
+            b.y = canvas.height + 10; // Éliminer le projectile
+          }
+        });
+
+        if (time > 200 || playerHP <= 0) {
+          clearInterval(phase);
+          inDodgePhase = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (playerHP <= 0) {
+            updateLog("Tu es mort...");
+            document.getElementById("controls").style.display = "none";
+          } else {
+            updateLog("Tu as survécu à l'attaque !");
+          }
+        }
+      }, 30);
+    }
+
+    updateHP();
+  </script>
+</body>
+</html>
